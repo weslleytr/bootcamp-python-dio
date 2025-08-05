@@ -1,0 +1,3 @@
+[05/08/2025 18:30:56] Função 'criar_usuario' executada com argumentos([<PessoaFisica: ('1')>],) e {}. Retornou None
+[05/08/2025 18:31:29] Função 'criar_conta' executada com argumentos(1, [<PessoaFisica: ('1')>], [<ContaCorrente - Agencia: 0001, C/C: 1, Titular: weslley>]) e {}. Retornou None
+[05/08/2025 18:31:37] Função 'depositar' executada com argumentos([<PessoaFisica: ('1')>],) e {}. Retornou None
