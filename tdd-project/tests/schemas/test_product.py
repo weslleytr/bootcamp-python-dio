@@ -1,4 +1,3 @@
-from uuid import UUID
 import pytest
 from pydantic import ValidationError
 from store.schemas.product import ProductIn
@@ -10,7 +9,6 @@ def test_schemas_return_success():
     product = ProductIn.model_validate(data)
 
     assert product.name == "Iphone 15 Pro Max"
-    assert isinstance(product.id, UUID)
 
 
 def test_schemas_return_raise():

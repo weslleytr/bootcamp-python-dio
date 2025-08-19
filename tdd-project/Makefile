@@ -10,3 +10,4 @@ test:
 test-matching:
 	@poetry run pytest -s -rx -k $(K) --pdb store ./tests/
 #make test-matching K=test_usecases_update_should_return_success
+#source C:/Users/wesli/AppData/Local/pypoetry/Cache/virtualenvs/tdd-project-xc7tcPV0-py3.13/Scripts/activate
