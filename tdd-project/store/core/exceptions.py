@@ -8,3 +8,7 @@ class BaseException(Exception):
 
 class NotFoundException(BaseException):
     message = "Not Found"
+
+
+class InsertException(BaseException):
+    message = "Error inserting the record"

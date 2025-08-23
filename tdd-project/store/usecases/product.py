@@ -1,10 +1,11 @@
+from datetime import datetime
 from typing import List
 from uuid import UUID
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 import pymongo
 from store.schemas.product import ProductIn, ProductOut, ProductUpdate, ProductUpdateOut
 from store.db.mongo import db_client
-from store.core.exceptions import NotFoundException
+from store.core.exceptions import NotFoundException, InsertException
 from store.models.product import ProductModel
 
 
@@ -15,10 +16,13 @@ class ProductUsecase:
         self.collection = self.database.get_collection("products")
 
     async def create(self, body: ProductIn) -> ProductOut:
-        product_model = ProductModel(**body.model_dump())
-        await self.collection.insert_one(product_model.model_dump())
+        try:
+            product_model = ProductModel(**body.model_dump())
+            await self.collection.insert_one(product_model.model_dump())
 
-        return ProductOut(**product_model.model_dump())
+            return ProductOut(**product_model.model_dump())
+        except Exception as exc:
+            raise InsertException(message=f"Failed to insert product: {exc}")
 
     async def get(self, id: UUID) -> ProductOut:
         result = await self.collection.find_one({"id": id})
@@ -31,16 +35,27 @@ class ProductUsecase:
     async def query(self) -> List[ProductOut]:
         return [ProductOut(**item) async for item in self.collection.find()]
 
-    async def update(self, id: UUID, body: ProductUpdate) -> ProductUpdateOut:
-        product = ProductUpdate(**body.model_dump(exclude_none=True))
+    async def update(self, id: UUID, body: ProductUpdate) -> dict:
+        product_data = body.model_dump(exclude_none=True)
 
+        product_data["updated_at"] = datetime.utcnow()
+
+        # Atualiza o produto
         result = await self.collection.find_one_and_update(
             filter={"id": id},
-            update={"$set": product.model_dump()},
+            update={"$set": product_data},
             return_document=pymongo.ReturnDocument.AFTER,
         )
 
-        return ProductUpdateOut(**result)
+        if result is None:
+            raise NotFoundException(message=f"Product not found with filter: {id}")
+
+        # SOLUÇÃO PARA ITENS NULOS NO RETORNO
+        cleaned = {k: v for k, v in result.items() if v is not None}
+
+        model = ProductUpdateOut(**cleaned)
+
+        return model.model_dump(exclude_none=True)
 
     async def delete(self, id: UUID) -> bool:
         product = await self.collection.find_one({"id": id})
